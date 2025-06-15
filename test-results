@@ -1,0 +1,849 @@
+1D: {
+  numeric = {
+    radix = "10",
+    value = "1"
+  },
+  unary_operations = {}
+}
+: nil
+99O: nil
+03H: {
+  numeric = {
+    radix = "16",
+    value = "03"
+  },
+  unary_operations = {}
+}
+35O: {
+  numeric = {
+    radix = "8",
+    value = "35"
+  },
+  unary_operations = {}
+}
+55H + 3: {
+  binary_operations = { "+" },
+  operands = { {
+      numeric = {
+        radix = "16",
+        value = "55"
+      },
+      unary_operations = {}
+    }, {
+      numeric = {
+        radix = "10",
+        value = "3"
+      },
+      unary_operations = {}
+    } }
+}
+$ + 3: {
+  binary_operations = { "+" },
+  operands = { {
+      location_counter = "$",
+      unary_operations = {}
+    }, {
+      numeric = {
+        radix = "10",
+        value = "3"
+      },
+      unary_operations = {}
+    } }
+}
+fumo + 1: {
+  binary_operations = { "+" },
+  operands = { {
+      label = "fumo",
+      unary_operations = {}
+    }, {
+      numeric = {
+        radix = "10",
+        value = "1"
+      },
+      unary_operations = {}
+    } }
+}
+00FFh or FF00h: {
+  binary_operations = { "OR" },
+  operands = { {
+      numeric = {
+        radix = "16",
+        value = "00FF"
+      },
+      unary_operations = {}
+    }, {
+      numeric = {
+        radix = "16",
+        value = "FF00"
+      },
+      unary_operations = {}
+    } }
+}
+3*5 + 7 EQ 22 AND 0 NE 1: {
+  binary_operations = { "AND" },
+  operands = { {
+      binary_operations = { "EQ" },
+      operands = { {
+          binary_operations = { "+" },
+          operands = { {
+              binary_operations = { "*" },
+              operands = { {
+                  numeric = {
+                    radix = "10",
+                    value = "3"
+                  },
+                  unary_operations = {}
+                }, {
+                  numeric = {
+                    radix = "10",
+                    value = "5"
+                  },
+                  unary_operations = {}
+                } }
+            }, {
+              numeric = {
+                radix = "10",
+                value = "7"
+              },
+              unary_operations = {}
+            } }
+        }, {
+          numeric = {
+            radix = "10",
+            value = "22"
+          },
+          unary_operations = {}
+        } }
+    }, {
+      binary_operations = { "NE" },
+      operands = { {
+          numeric = {
+            radix = "10",
+            value = "0"
+          },
+          unary_operations = {}
+        }, {
+          numeric = {
+            radix = "10",
+            value = "1"
+          },
+          unary_operations = {}
+        } }
+    } }
+}
+NOT (5 EQ 3) OR NOT (5 NE 3): {
+  binary_operations = { "OR" },
+  operands = { {
+      expression = {
+        binary_operations = { "EQ" },
+        operands = { {
+            numeric = {
+              radix = "10",
+              value = "5"
+            },
+            unary_operations = {}
+          }, {
+            numeric = {
+              radix = "10",
+              value = "3"
+            },
+            unary_operations = {}
+          } }
+      },
+      unary_operations = { "NOT" }
+    }, {
+      expression = {
+        binary_operations = { "NE" },
+        operands = { {
+            numeric = {
+              radix = "10",
+              value = "5"
+            },
+            unary_operations = {}
+          }, {
+            numeric = {
+              radix = "10",
+              value = "3"
+            },
+            unary_operations = {}
+          } }
+      },
+      unary_operations = { "NOT" }
+    } }
+}
+ADI 55H: {
+  args = { {
+      byte = {
+        numeric = {
+          radix = "16",
+          value = "55"
+        },
+        unary_operations = {}
+      }
+    } },
+  bytes = { 198, 0 },
+  cmd_name = "ADI"
+}
+MOV B: nil
+INX: nil
+STAX D: {
+  args = { {
+      register_pair = "D"
+    } },
+  bytes = { 18 },
+  cmd_name = "STAX"
+}
+MVI M, 32H: {
+  args = { {
+      register = "M"
+    }, {
+      byte = {
+        numeric = {
+          radix = "16",
+          value = "32"
+        },
+        unary_operations = {}
+      }
+    } },
+  bytes = { 54, 0 },
+  cmd_name = "MVI"
+}
+RST 0H: {
+  args = { {
+      faux = {
+        numeric = {
+          radix = "16",
+          value = "0"
+        },
+        unary_operations = {}
+      }
+    } },
+  bytes = { { 207, 215, 223, 231, 239, 247, 255,
+      [0] = 199
+    } },
+  cmd_name = "RST"
+}
+RST fumo: {
+  args = { {
+      faux = {
+        label = "fumo",
+        unary_operations = {}
+      }
+    } },
+  bytes = { { 207, 215, 223, 231, 239, 247, 255,
+      [0] = 199
+    } },
+  cmd_name = "RST"
+}
+SHLD 0990H: {
+  args = { {
+      word = {
+        numeric = {
+          radix = "16",
+          value = "0990"
+        },
+        unary_operations = {}
+      }
+    } },
+  bytes = { 34, 0, 0 },
+  cmd_name = "SHLD"
+}
+fumo: ADI 55H ; comment: {
+  cmd = {
+    args = { {
+        byte = {
+          numeric = {
+            radix = "16",
+            value = "55"
+          },
+          unary_operations = {}
+        }
+      } },
+    bytes = { 198, 0 },
+    cmd_name = "ADI"
+  },
+  comment = "comment",
+  label = "fumo"
+}
+IN 05H ; фумофумо на русском: {
+  cmd = {
+    args = { {
+        byte = {
+          numeric = {
+            radix = "16",
+            value = "05"
+          },
+          unary_operations = {}
+        }
+      } },
+    bytes = { 219, 0 },
+    cmd_name = "IN"
+  },
+  comment = "фумофумо на русском"
+}
+INX SP: {
+  cmd = {
+    args = { {
+        register_pair = "SP"
+      } },
+    bytes = { 51 },
+    cmd_name = "INX"
+  }
+}
+MOV A, C: {
+  cmd = {
+    args = { {
+        register = "A"
+      }, {
+        register = "C"
+      } },
+    bytes = { 121 },
+    cmd_name = "MOV"
+  }
+}
+fumo: MOV A ; comment: nil
+MVI: nil
+    memcpy:
+    ldax d ;  Байт считывается из источника\ldots
+    mov m, a ; \ldots{} и он записывается по адресу назначения
+    inx d ; Следующая ячейка памяти источника\ldots
+    inx h ; Следующая ячейка памяти назначения\ldots
+    dcr c ; Одним байтом меньше, декремент счётчика
+    jnz memcpy ; Если есть ещё байты, продолжить копирование
+    ret ; Выход из подпрограммы
+    : { {
+    label = "memcpy"
+  }, {
+    cmd = {
+      args = { {
+          register_pair = "D"
+        } },
+      bytes = { 26 },
+      cmd_name = "LDAX"
+    },
+    comment = "Байт считывается из источника\\ldots"
+  }, {
+    cmd = {
+      args = { {
+          register = "M"
+        }, {
+          register = "A"
+        } },
+      bytes = { 119 },
+      cmd_name = "MOV"
+    },
+    comment = "\\ldots{} и он записывается по адресу назначения"
+  }, {
+    cmd = {
+      args = { {
+          register_pair = "D"
+        } },
+      bytes = { 19 },
+      cmd_name = "INX"
+    },
+    comment = "Следующая ячейка памяти источника\\ldots"
+  }, {
+    cmd = {
+      args = { {
+          register_pair = "H"
+        } },
+      bytes = { 35 },
+      cmd_name = "INX"
+    },
+    comment = "Следующая ячейка памяти назначения\\ldots"
+  }, {
+    cmd = {
+      args = { {
+          register = "C"
+        } },
+      bytes = { 13 },
+      cmd_name = "DCR"
+    },
+    comment = "Одним байтом меньше, декремент счётчика"
+  }, {
+    cmd = {
+      args = { {
+          word = {
+            label = "memcpy",
+            unary_operations = {}
+          }
+        } },
+      bytes = { 194, 0, 0 },
+      cmd_name = "JNZ"
+    },
+    comment = "Если есть ещё байты, продолжить копирование"
+  }, {
+    cmd = {
+      bytes = { 201 },
+      cmd_name = "RET"
+    },
+    comment = "Выход из подпрограммы"
+  } }
+    delay:
+    CALL 01C8H
+    DCX B
+    XRA A
+    CMP B
+    JNZ delay
+    CMP C
+    JNZ delay
+    RET
+    : { {
+    label = "delay"
+  }, {
+    cmd = {
+      args = { {
+          word = {
+            numeric = {
+              radix = "16",
+              value = "01C8"
+            },
+            unary_operations = {}
+          }
+        } },
+      bytes = { 205, 0, 0 },
+      cmd_name = "CALL"
+    }
+  }, {
+    cmd = {
+      args = { {
+          register_pair = "B"
+        } },
+      bytes = { 11 },
+      cmd_name = "DCX"
+    }
+  }, {
+    cmd = {
+      args = { {
+          register = "A"
+        } },
+      bytes = { 175 },
+      cmd_name = "XRA"
+    }
+  }, {
+    cmd = {
+      args = { {
+          register = "B"
+        } },
+      bytes = { 184 },
+      cmd_name = "CMP"
+    }
+  }, {
+    cmd = {
+      args = { {
+          word = {
+            label = "delay",
+            unary_operations = {}
+          }
+        } },
+      bytes = { 194, 0, 0 },
+      cmd_name = "JNZ"
+    }
+  }, {
+    cmd = {
+      args = { {
+          register = "C"
+        } },
+      bytes = { 185 },
+      cmd_name = "CMP"
+    }
+  }, {
+    cmd = {
+      args = { {
+          word = {
+            label = "delay",
+            unary_operations = {}
+          }
+        } },
+      bytes = { 194, 0, 0 },
+      cmd_name = "JNZ"
+    }
+  }, {
+    cmd = {
+      bytes = { 201 },
+      cmd_name = "RET"
+    }
+  } }
+    main_mode0:
+    mvi A, 10001011B
+    out B3H
+
+    body_mode0:
+    in B1H
+    call nibl_sub
+    out B0H
+    jmp body_mode0
+    : { {
+    label = "main_mode0"
+  }, {
+    cmd = {
+      args = { {
+          register = "A"
+        }, {
+          byte = {
+            numeric = {
+              radix = "2",
+              value = "10001011"
+            },
+            unary_operations = {}
+          }
+        } },
+      bytes = { 62, 0 },
+      cmd_name = "MVI"
+    }
+  }, {
+    cmd = {
+      args = { {
+          byte = {
+            numeric = {
+              radix = "16",
+              value = "B3"
+            },
+            unary_operations = {}
+          }
+        } },
+      bytes = { 211, 0 },
+      cmd_name = "OUT"
+    }
+  }, {
+    label = "body_mode0"
+  }, {
+    cmd = {
+      args = { {
+          byte = {
+            numeric = {
+              radix = "16",
+              value = "B1"
+            },
+            unary_operations = {}
+          }
+        } },
+      bytes = { 219, 0 },
+      cmd_name = "IN"
+    }
+  }, {
+    cmd = {
+      args = { {
+          word = {
+            label = "nibl_sub",
+            unary_operations = {}
+          }
+        } },
+      bytes = { 205, 0, 0 },
+      cmd_name = "CALL"
+    }
+  }, {
+    cmd = {
+      args = { {
+          byte = {
+            numeric = {
+              radix = "16",
+              value = "B0"
+            },
+            unary_operations = {}
+          }
+        } },
+      bytes = { 211, 0 },
+      cmd_name = "OUT"
+    }
+  }, {
+    cmd = {
+      args = { {
+          word = {
+            label = "body_mode0",
+            unary_operations = {}
+          }
+        } },
+      bytes = { 195, 0, 0 },
+      cmd_name = "JMP"
+    }
+  } }
+1D: 1
+03H: 3
+35O: 29
+55H + 3: 88
+$ + 3: 3
+fumo + 1: 11
+00FFh or FF00h: 65535
+3*5 + 7 EQ 22 AND 0 NE 1: 65535
+NOT (5 EQ 3) OR NOT (5 NE 3): 65535
+    memcpy:
+    ldax d ;  Байт считывается из источника\ldots
+    mov m, a ; \ldots{} и он записывается по адресу назначения
+    inx d ; Следующая ячейка памяти источника\ldots
+    inx h ; Следующая ячейка памяти назначения\ldots
+    dcr c ; Одним байтом меньше, декремент счётчика
+    jnz memcpy ; Если есть ещё байты, продолжить копирование
+    ret ; Выход из подпрограммы
+    : { {
+    label = "memcpy",
+    location_counter = 2048
+  }, {
+    cmd = {
+      args = { {
+          register_pair = "D"
+        } },
+      bytes = { 26 },
+      cmd_name = "LDAX"
+    },
+    comment = "Байт считывается из источника\\ldots",
+    location_counter = 2048
+  }, {
+    cmd = {
+      args = { {
+          register = "M"
+        }, {
+          register = "A"
+        } },
+      bytes = { 119 },
+      cmd_name = "MOV"
+    },
+    comment = "\\ldots{} и он записывается по адресу назначения",
+    location_counter = 2049
+  }, {
+    cmd = {
+      args = { {
+          register_pair = "D"
+        } },
+      bytes = { 19 },
+      cmd_name = "INX"
+    },
+    comment = "Следующая ячейка памяти источника\\ldots",
+    location_counter = 2050
+  }, {
+    cmd = {
+      args = { {
+          register_pair = "H"
+        } },
+      bytes = { 35 },
+      cmd_name = "INX"
+    },
+    comment = "Следующая ячейка памяти назначения\\ldots",
+    location_counter = 2051
+  }, {
+    cmd = {
+      args = { {
+          register = "C"
+        } },
+      bytes = { 13 },
+      cmd_name = "DCR"
+    },
+    comment = "Одним байтом меньше, декремент счётчика",
+    location_counter = 2052
+  }, {
+    cmd = {
+      args = { {
+          word = {
+            label = "memcpy",
+            unary_operations = {}
+          }
+        } },
+      bytes = { 194, 0, 8 },
+      cmd_name = "JNZ"
+    },
+    comment = "Если есть ещё байты, продолжить копирование",
+    location_counter = 2053
+  }, {
+    cmd = {
+      bytes = { 201 },
+      cmd_name = "RET"
+    },
+    comment = "Выход из подпрограммы",
+    location_counter = 2056
+  } }
+    delay:
+    CALL 01C8H
+    DCX B
+    XRA A
+    CMP B
+    JNZ delay
+    CMP C
+    JNZ delay
+    RET
+    : { {
+    label = "delay",
+    location_counter = 2048
+  }, {
+    cmd = {
+      args = { {
+          word = {
+            numeric = {
+              radix = "16",
+              value = "01C8"
+            },
+            unary_operations = {}
+          }
+        } },
+      bytes = { 205, 200, 1 },
+      cmd_name = "CALL"
+    },
+    location_counter = 2048
+  }, {
+    cmd = {
+      args = { {
+          register_pair = "B"
+        } },
+      bytes = { 11 },
+      cmd_name = "DCX"
+    },
+    location_counter = 2051
+  }, {
+    cmd = {
+      args = { {
+          register = "A"
+        } },
+      bytes = { 175 },
+      cmd_name = "XRA"
+    },
+    location_counter = 2052
+  }, {
+    cmd = {
+      args = { {
+          register = "B"
+        } },
+      bytes = { 184 },
+      cmd_name = "CMP"
+    },
+    location_counter = 2053
+  }, {
+    cmd = {
+      args = { {
+          word = {
+            label = "delay",
+            unary_operations = {}
+          }
+        } },
+      bytes = { 194, 0, 8 },
+      cmd_name = "JNZ"
+    },
+    location_counter = 2054
+  }, {
+    cmd = {
+      args = { {
+          register = "C"
+        } },
+      bytes = { 185 },
+      cmd_name = "CMP"
+    },
+    location_counter = 2057
+  }, {
+    cmd = {
+      args = { {
+          word = {
+            label = "delay",
+            unary_operations = {}
+          }
+        } },
+      bytes = { 194, 0, 8 },
+      cmd_name = "JNZ"
+    },
+    location_counter = 2058
+  }, {
+    cmd = {
+      bytes = { 201 },
+      cmd_name = "RET"
+    },
+    location_counter = 2061
+  } }
+    main_mode0:
+    mvi A, 10001011B
+    out B3H
+
+    body_mode0:
+    in B1H
+    call nibl_sub
+    out B0H
+    jmp body_mode0
+    : { {
+    label = "main_mode0",
+    location_counter = 2048
+  }, {
+    cmd = {
+      args = { {
+          register = "A"
+        }, {
+          byte = {
+            numeric = {
+              radix = "2",
+              value = "10001011"
+            },
+            unary_operations = {}
+          }
+        } },
+      bytes = { 62, 139 },
+      cmd_name = "MVI"
+    },
+    location_counter = 2048
+  }, {
+    cmd = {
+      args = { {
+          byte = {
+            numeric = {
+              radix = "16",
+              value = "B3"
+            },
+            unary_operations = {}
+          }
+        } },
+      bytes = { 211, 179 },
+      cmd_name = "OUT"
+    },
+    location_counter = 2050
+  }, {
+    label = "body_mode0",
+    location_counter = 2052
+  }, {
+    cmd = {
+      args = { {
+          byte = {
+            numeric = {
+              radix = "16",
+              value = "B1"
+            },
+            unary_operations = {}
+          }
+        } },
+      bytes = { 219, 177 },
+      cmd_name = "IN"
+    },
+    location_counter = 2052
+  }, {
+    cmd = {
+      args = { {
+          word = {
+            label = "nibl_sub",
+            unary_operations = {}
+          }
+        } },
+      bytes = { 205, 0, 9 },
+      cmd_name = "CALL"
+    },
+    location_counter = 2054
+  }, {
+    cmd = {
+      args = { {
+          byte = {
+            numeric = {
+              radix = "16",
+              value = "B0"
+            },
+            unary_operations = {}
+          }
+        } },
+      bytes = { 211, 176 },
+      cmd_name = "OUT"
+    },
+    location_counter = 2057
+  }, {
+    cmd = {
+      args = { {
+          word = {
+            label = "body_mode0",
+            unary_operations = {}
+          }
+        } },
+      bytes = { 195, 4, 8 },
+      cmd_name = "JMP"
+    },
+    location_counter = 2059
+  } }
