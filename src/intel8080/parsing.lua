@@ -45,37 +45,31 @@ Intel8080.parsing.numeric = {
         * lpeg.Cg(lpeg.S "Hh" / "16", "radix")),
 }
 
-Intel8080.parsing.location_counter = lpeg.P "$"
-
-Intel8080.parsing.ascii_literal = lpeg.P "'" * lpeg.Cg((lpeg.P "''" + (lpeg.utfR(0x00, 0x7F) - lpeg.P "'"))^1 /
-    function (str)
-        return str:gsub("''", "'")
-    end
-) * lpeg.P "'"
+Intel8080.parsing.location_counter = lpeg.Cg (lpeg.P "$")
 
 Intel8080.parsing.label
-    = (lpeg.R("az", "AZ") + lpeg.S "_-" + lpeg.P "@" + lpeg.P "?") * (lpeg.R("az", "AZ", "09") + lpeg.S "_-")^0
+    = lpeg.Cg((lpeg.R("az", "AZ") + lpeg.S "_-" + lpeg.P "@" + lpeg.P "?") * (lpeg.R("az", "AZ", "09") + lpeg.S "_-")^0)
 
 Intel8080.parsing.operation = {
-    OR = (lpeg.P "OR" + lpeg.P "or") / string.upper,
-    XOR = (lpeg.P "XOR" + lpeg.P "xor") / string.upper,
-    AND = (lpeg.P "AND" + lpeg.P "and") / string.upper,
-    NOT = (lpeg.P "NOT" + lpeg.P "not") / string.upper,
-    EQ = (lpeg.P "EQ" + lpeg.P "eq") / string.upper,
-    LT = (lpeg.P "LT" + lpeg.P "lt") / string.upper,
-    LE = (lpeg.P "LE" + lpeg.P "le") / string.upper,
-    GT = (lpeg.P "GT" + lpeg.P "gt") / string.upper,
-    GE = (lpeg.P "GE" + lpeg.P "ge") / string.upper,
-    NE = (lpeg.P "NE" + lpeg.P "ne") / string.upper,
-    MOD = (lpeg.P "MOD" + lpeg.P "mod") / string.upper,
-    SHL = (lpeg.P "SHL" + lpeg.P "shl") / string.upper,
-    SHR = (lpeg.P "SHR" + lpeg.P "shr") / string.upper,
-    HIGH = (lpeg.P "HIGH" + lpeg.P "high") / string.upper,
-    LOW = (lpeg.P "LOW" + lpeg.P "low") / string.upper,
-    PLUS = lpeg.P "+",
-    MINUS = lpeg.P "-",
-    TIMES = lpeg.P "*",
-    DIV = lpeg.P "/",
+    OR    = lpeg.Cg ((lpeg.P "OR" + lpeg.P "or") / string.upper),
+    XOR   = lpeg.Cg ((lpeg.P "XOR" + lpeg.P "xor") / string.upper),
+    AND   = lpeg.Cg ((lpeg.P "AND" + lpeg.P "and") / string.upper),
+    NOT   = lpeg.Cg ((lpeg.P "NOT" + lpeg.P "not") / string.upper),
+    EQ    = lpeg.Cg ((lpeg.P "EQ" + lpeg.P "eq") / string.upper),
+    LT    = lpeg.Cg ((lpeg.P "LT" + lpeg.P "lt") / string.upper),
+    LE    = lpeg.Cg ((lpeg.P "LE" + lpeg.P "le") / string.upper),
+    GT    = lpeg.Cg ((lpeg.P "GT" + lpeg.P "gt") / string.upper),
+    GE    = lpeg.Cg ((lpeg.P "GE" + lpeg.P "ge") / string.upper),
+    NE    = lpeg.Cg ((lpeg.P "NE" + lpeg.P "ne") / string.upper),
+    MOD   = lpeg.Cg ((lpeg.P "MOD" + lpeg.P "mod") / string.upper),
+    SHL   = lpeg.Cg ((lpeg.P "SHL" + lpeg.P "shl") / string.upper),
+    SHR   = lpeg.Cg ((lpeg.P "SHR" + lpeg.P "shr") / string.upper),
+    HIGH  = lpeg.Cg ((lpeg.P "HIGH" + lpeg.P "high") / string.upper),
+    LOW   = lpeg.Cg ((lpeg.P "LOW" + lpeg.P "low") / string.upper),
+    PLUS  = lpeg.Cg (lpeg.P "+"),
+    MINUS = lpeg.Cg (lpeg.P "-"),
+    TIMES = lpeg.Cg (lpeg.P "*"),
+    DIV   = lpeg.Cg (lpeg.P "/"),
 }
 
 Intel8080.parsing.expression = {}
@@ -119,16 +113,16 @@ Intel8080.parsing.expression.rule =
         ) / Intel8080.parsing.expression.flatten / Intel8080.parsing.expression.collect,
 
         disjunct = lpeg.Ct(
-            lpeg.Cg(lpeg.V "negand")
+            lpeg.Cg(lpeg.V "conjuct")
             * (
                 Intel8080.parsing.blank^1
                 * lpeg.Ct(lpeg.V "conjunction")
                 * Intel8080.parsing.blank^1
-                * lpeg.Cg(lpeg.V "negand")
+                * lpeg.Cg(lpeg.V "conjuct")
             )^0
         ) / Intel8080.parsing.expression.flatten / Intel8080.parsing.expression.collect,
 
-        negand = lpeg.Ct(
+        conjuct = lpeg.Ct(
             lpeg.Cg(lpeg.V "comparison_operand")
             * (
                 Intel8080.parsing.blank^1
@@ -188,7 +182,6 @@ Intel8080.parsing.expression.rule =
                 lpeg.V "number"
                 + lpeg.V "loc_counter"
                 + lpeg.V "asm_label"
-                + lpeg.V "ascii_literal"
                 + (
                     lpeg.P "("
                     * Intel8080.parsing.blank^0
@@ -230,7 +223,6 @@ Intel8080.parsing.expression.rule =
         ),
         loc_counter = lpeg.Cg(Intel8080.parsing.location_counter, "location_counter"),
         asm_label = lpeg.Cg(Intel8080.parsing.label, "label"),
-        ascii_literal = lpeg.Cg(Intel8080.parsing.ascii_literal, "ascii"),
     }
 
 local generate_cmds = function (instructions)
@@ -310,26 +302,76 @@ Intel8080.parsing.cmd = generate_cmds(Intel8080.langdef.opcodes)
 
 Intel8080.parsing.line = lpeg.P {
     [1] = "line",
+    -- line = lpeg.Ct(
+    --     (
+    --         Intel8080.parsing.blank^0
+    --         * lpeg.V "label"
+    --         * Intel8080.parsing.label_delim
+    --         * Intel8080.parsing.blank^0
+    --     )^-1
+    --     *
+    --     (
+    --         Intel8080.parsing.blank^0
+    --         * lpeg.V "cmd"
+    --         * Intel8080.parsing.blank^0
+    --     )^-1
+    --     *
+    --     (
+    --         Intel8080.parsing.blank^0
+    --         * Intel8080.parsing.comment_delim
+    --         * Intel8080.parsing.blank^0
+    --         * lpeg.V "comment"
+    --     )^-1
+    -- ),
     line = lpeg.Ct(
-        (
-            Intel8080.parsing.blank^0
-            * lpeg.V "label"
-            * Intel8080.parsing.label_delim
-            * Intel8080.parsing.blank^0
-        )^-1
-        *
-        (
-            Intel8080.parsing.blank^0
-            * lpeg.V "cmd"
-            * Intel8080.parsing.blank^0
-        )^-1
-        *
-        (
-            Intel8080.parsing.blank^0
-            * Intel8080.parsing.comment_delim
-            * Intel8080.parsing.blank^0
-            * lpeg.V "comment"
-        )^-1
+        lpeg.V "label"
+        * Intel8080.parsing.blank^0
+        * Intel8080.parsing.label_delim
+        * Intel8080.parsing.blank^0
+        * lpeg.V "cmd"
+        * Intel8080.parsing.blank^0
+        * Intel8080.parsing.comment_delim
+        * Intel8080.parsing.blank^0
+        * lpeg.V "comment"
+    )
+    + lpeg.Ct(
+        lpeg.V "cmd"
+        * Intel8080.parsing.blank^0
+        * Intel8080.parsing.comment_delim
+        * Intel8080.parsing.blank^0
+        * lpeg.V "comment"
+    )
+    + lpeg.Ct(
+        lpeg.V "label"
+        * Intel8080.parsing.blank^0
+        * Intel8080.parsing.label_delim
+        * Intel8080.parsing.blank^0
+        * lpeg.V "cmd"
+        * Intel8080.parsing.blank^0
+    )
+    + lpeg.Ct(
+        lpeg.V "label"
+        * Intel8080.parsing.blank^0
+        * Intel8080.parsing.label_delim
+        * Intel8080.parsing.blank^0
+        * Intel8080.parsing.comment_delim
+        * Intel8080.parsing.blank^0
+        * lpeg.V "comment"
+    )
+    + lpeg.Ct(
+        lpeg.V "label"
+        * Intel8080.parsing.blank^0
+        * Intel8080.parsing.label_delim
+        * Intel8080.parsing.blank^0
+    )
+    + lpeg.Ct(
+        lpeg.V "cmd"
+        * Intel8080.parsing.blank^0
+    )
+    + lpeg.Ct(
+        Intel8080.parsing.comment_delim
+        * Intel8080.parsing.blank^0
+        * lpeg.V "comment"
     ),
 
     label = lpeg.Cg(
@@ -344,7 +386,15 @@ Intel8080.parsing.line = lpeg.P {
 }
 
 Intel8080.parsing.listing = lpeg.Ct(
-    Intel8080.parsing.line * ((Intel8080.parsing.newline)^1 * Intel8080.parsing.line)^0 * lpeg.P(-1)
+    (Intel8080.parsing.blank + Intel8080.parsing.newline)^0
+    * Intel8080.parsing.line
+    * (Intel8080.parsing.blank + Intel8080.parsing.newline)^0
+    * (
+        (Intel8080.parsing.blank + Intel8080.parsing.newline)^0
+        * Intel8080.parsing.line
+        * (Intel8080.parsing.blank + Intel8080.parsing.newline)^0
+    )^0
 )
+* lpeg.P (-1)
 
 return Intel8080
