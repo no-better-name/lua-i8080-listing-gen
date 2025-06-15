@@ -105,7 +105,7 @@ Intel8080.parsing.expression.collect = function (expr)
     return expr
 end
 
-Intel8080.parsing.expression =
+Intel8080.parsing.expression.rule =
     lpeg.P {
         [1] = "expression",
         expression = lpeg.Ct(
@@ -257,15 +257,15 @@ local generate_cmds = function (instructions)
                     next_arg = lpeg.Cg(Intel8080.parsing.register_pair[arg_contents.register_pair], "register_pair")
                     next_arg = lpeg.Ct(next_arg)
                 elseif arg_contents.byte then
-                    next_arg = lpeg.Cg(Intel8080.parsing.expression, "byte")
+                    next_arg = lpeg.Cg(Intel8080.parsing.expression.rule, "byte")
                     next_arg = lpeg.Ct(next_arg)
                     byte_count = byte_count + 1
                 elseif arg_contents.word then
-                    next_arg = lpeg.Cg(Intel8080.parsing.expression, "word")
+                    next_arg = lpeg.Cg(Intel8080.parsing.expression.rule, "word")
                     next_arg = lpeg.Ct(next_arg)
                     byte_count = byte_count + 2
                 elseif arg_contents.faux then
-                    next_arg = lpeg.Cg(Intel8080.parsing.expression, "faux")
+                    next_arg = lpeg.Cg(Intel8080.parsing.expression.rule, "faux")
                     next_arg = lpeg.Ct(next_arg)
                 end
 
