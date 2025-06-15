@@ -1,5 +1,6 @@
 local intel8080 = require "intel8080"
 local inspect = require "inspect"
+local lpeg = require "lpeg"
 
 peek = function(arg)
     print(inspect(arg))
@@ -9,6 +10,7 @@ assert(intel8080)
 assert(intel8080.langdef)
 assert(intel8080.parsing)
 assert(intel8080.assembly)
+assert(intel8080.formatting)
 
 function toBits(num,bits)
     -- returns a table of bits, most significant first.
@@ -20,6 +22,11 @@ function toBits(num,bits)
     end
     return table.concat(t)
 end
+
+assert(intel8080.parsing.register.A:match("a") == "A")
+assert(intel8080.parsing.register.B:match("B") == "B")
+assert(intel8080.parsing.register_pair.SP:match("sp") == "SP")
+assert(intel8080.parsing.register_pair.PSW:match("PSW") == "PSW")
 
 local numeric =
     intel8080.parsing.numeric.hex
@@ -45,57 +52,129 @@ for i = 0, 65535 do
 
     for pos, item in ipairs(vals) do
         local match = numeric:match(item.match)
-        -- if match == nil then
-        --     print("item" .. inspect(item))
-        -- end
-
-        -- if match.value ~= item.value or match.radix ~= item.radix then
-        --     print("match" .. inspect(match))
-        --     print("item" .. inspect(item))
-        -- end
-
         assert(match.value == item.value and match.radix == item.radix)
     end
 end
 
-local pretty = intel8080.formatting.make_text_listing
+assert(intel8080.parsing.label:match("fumofumo") == "fumofumo")
+assert(intel8080.parsing.label:match("FumoFumo") == "FumoFumo")
+assert(intel8080.parsing.label:match("fumo-fumo") == "fumo-fumo")
+assert(intel8080.parsing.label:match("fumo_fumo") == "fumo_fumo")
+assert(intel8080.parsing.label:match("1fumofumo") == nil)
+assert(intel8080.parsing.label:match("fumofumo1") == "fumofumo1")
 
-print(pretty(
-[==[
-MVI  C,F8H   ; Инициализация счетчика
-LXI  H,0810H ; Инициализация указателя
-MVI A,55H    ; Переслать 55 в A
-SUB M        ; Вычитание А из М
-JNZ 0ABAH    ; Возвращение в цикл, если не равен 0
-INX H        ; Инкремент указателя
-MVI A,AAH    ; Переслать AA в A
-SUB M        ; Вычитание А из М
-JNZ 0ABAH    ; Возвращение в цикл, если не равен 0
-INX H        ; Инкремент указателя
-DCR C        ; Декремент счетчика
-JNZ 0AA5H    ; Возвращение в цикл, если не равен 0
-JMP 05B0H    ; Мелодия
-MVI C, AH    ; Инициализация счетчика
-LXI D, 0BF5H ; Инициализация указателя
-MOV A, L     ; Переслать L в A
-RRC          ; Сдвиг содержимого аккумулятора вправо
-RRC          ; Сдвиг содержимого аккумулятора вправо
-RRC          ; Сдвиг содержимого аккумулятора вправо
-RRC          ; Сдвиг содержимого аккумулятора вправо
-ANI 0FH      ; Сброс (выделение полубайта из байта)
-STAX D       ; Сохранение в память
-DCX D        ; Декремент указателя
-MOV A, H     ; Переслать H в A
-ANI 0FH      ; Сброс (выделение полубайта из байта)
-STAX D       ; Сохранение в память
-DCX D        ; Декремент указателя
-MOV A, M     ; Переслать M в A
-MOV H, L     ; Переслать L в H
-MOV L, A     ; Переслать A в L
-DCR C        ; Декремент счетчика
-JNZ 0ABFH    ; Возвращение в цикл, если не равен 0
-CALL 01E9H   ; Вывод сообщения на дисплей
-CALL 01C8H    
-JMP 0AD7H     
-]==]
-, 0x0AA0))
+local expression = intel8080.parsing.expression.rule * lpeg.P (-1)
+for _, val in ipairs ({"1D", "", "99O", "03H", "35O", "55H + 3", "$ + 3", "fumo + 1", "00FFh or FF00h", "3*5 + 7 EQ 22 AND 0 NE 1", "NOT (5 EQ 3) OR NOT (5 NE 3)"}) do
+    print (val .. ": " .. inspect (expression:match(val)))
+end
+
+local cmd = intel8080.parsing.cmd * lpeg.P (-1)
+for _, val in ipairs ({"ADI 55H", "MOV B", "INX", "STAX D", "MVI M, 32H", "RST 0H", "RST fumo", "SHLD 0990H"}) do
+    print (val .. ": " .. inspect (cmd:match(val)))
+end
+
+local line = intel8080.parsing.line * lpeg.P (-1)
+for _, val in ipairs ({
+    "fumo: ADI 55H ; comment",
+    "IN 05H ; фумофумо на русском",
+    "INX SP",
+    "MOV A, C",
+    "fumo: MOV A ; comment",
+    "MVI",
+}) do
+    print (val .. ": " .. inspect (line:match(val)))
+end
+
+local listing = intel8080.parsing.listing
+for _, val in ipairs ({
+    [==[
+    memcpy:
+    ldax d ;  Байт считывается из источника\ldots
+    mov m, a ; \ldots{} и он записывается по адресу назначения
+    inx d ; Следующая ячейка памяти источника\ldots
+    inx h ; Следующая ячейка памяти назначения\ldots
+    dcr c ; Одним байтом меньше, декремент счётчика
+    jnz memcpy ; Если есть ещё байты, продолжить копирование
+    ret ; Выход из подпрограммы
+    ]==],
+    [==[
+    delay:
+    CALL 01C8H
+    DCX B
+    XRA A
+    CMP B
+    JNZ delay
+    CMP C
+    JNZ delay
+    RET
+    ]==], 
+    [==[
+    main_mode0:
+    mvi A, 10001011B
+    out B3H
+
+    body_mode0:
+    in B1H
+    call nibl_sub
+    out B0H
+    jmp body_mode0
+    ]==], 
+}) do
+    print (val .. ": " .. inspect (listing:match(val)))
+end
+
+assert (intel8080.assembly.to_unsigned_word(15) == 15)
+assert (intel8080.assembly.to_unsigned_word(-1) == 65535)
+assert (intel8080.assembly.to_unsigned_word(32768) == 32768)
+assert (intel8080.assembly.to_unsigned_word(65536) == 0)
+
+assert (intel8080.assembly.unary_operation["-"](1) == 65535)
+assert (intel8080.assembly.unary_operation["NOT"](0xFF00) == 0x00FF)
+assert (intel8080.assembly.unary_operation["HIGH"](0xFF00) == 0x00FF)
+assert (intel8080.assembly.unary_operation["LOW"](0xFF00) == 0)
+
+assert (intel8080.assembly.binary_operation["+"](0xFFFF, 1) == 0)
+assert (intel8080.assembly.binary_operation["-"](0, 1) == 0xFFFF)
+
+local expression = intel8080.parsing.expression.rule * lpeg.P (-1)
+for _, val in ipairs ({"1D", "03H", "35O", "55H + 3", "$ + 3", "fumo + 1", "00FFh or FF00h", "3*5 + 7 EQ 22 AND 0 NE 1", "NOT (5 EQ 3) OR NOT (5 NE 3)"}) do
+    print (val .. ": " .. intel8080.assembly.evaluate_expression (expression:match(val), 0x0000, {fumo = 10}))
+end
+
+local listing = intel8080.parsing.listing
+for _, val in ipairs ({
+    [==[
+    memcpy:
+    ldax d ;  Байт считывается из источника\ldots
+    mov m, a ; \ldots{} и он записывается по адресу назначения
+    inx d ; Следующая ячейка памяти источника\ldots
+    inx h ; Следующая ячейка памяти назначения\ldots
+    dcr c ; Одним байтом меньше, декремент счётчика
+    jnz memcpy ; Если есть ещё байты, продолжить копирование
+    ret ; Выход из подпрограммы
+    ]==],
+    [==[
+    delay:
+    CALL 01C8H
+    DCX B
+    XRA A
+    CMP B
+    JNZ delay
+    CMP C
+    JNZ delay
+    RET
+    ]==], 
+    [==[
+    main_mode0:
+    mvi A, 10001011B
+    out B3H
+
+    body_mode0:
+    in B1H
+    call nibl_sub
+    out B0H
+    jmp body_mode0
+    ]==], 
+}) do
+    print (val .. ": " .. inspect (intel8080.assembly.assemble (val, 0x0800, {nibl_sub = 0x0900})))
+end
