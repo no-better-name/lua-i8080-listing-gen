@@ -157,12 +157,6 @@ Intel8080.assembly.evaluate_expression = function (expr, loc_counter, labels)
                 labels[expr.label]
             )
         end
-        if expr.ascii then
-            result = {utf8.codepoint(expr.ascii, 1, 2)}
-            result = Intel8080.assembly.to_unsigned_word(
-                (result[1] << 8) + result[2]
-            )
-        end
         if expr.expression then
             result = Intel8080.assembly.to_unsigned_word(
                 Intel8080.assembly.evaluate_expression(expr.expression, loc_counter, labels)
