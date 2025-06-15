@@ -155,4 +155,172 @@ Intel8080.formatting.make_text_listing = function (code, location_counter, label
     return printout
 end
 
+Intel8080.formatting.make_listing = function (code, location_counter, labels)
+    local state = Intel8080.assembly.assemble(code, location_counter, labels)
+    local formatted_lines = {}
+    local last_formatted_line = 0
+
+    for _, line in ipairs(state) do
+        if not line.cmd and not line.comment and not line.label then
+            goto continue
+        end
+
+        if last_formatted_line == 0 or line.location_counter ~= formatted_lines[last_formatted_line].location_counter then
+            last_formatted_line = last_formatted_line + 1
+            formatted_lines[last_formatted_line] = {
+                location_counter = line.location_counter,
+                label = {line.label},
+                bytes = line.cmd and line.cmd.bytes or {},
+                asm = line.cmd and {cmd_name = line.cmd.cmd_name, args = line.cmd.args} or nil,
+                comment = {line.comment}
+            }
+        else
+            table.insert(formatted_lines[last_formatted_line].label, line.label)
+            table.insert(formatted_lines[last_formatted_line].comment, line.comment)
+            formatted_lines[last_formatted_line].asm = line.cmd and {cmd_name = line.cmd.cmd_name, args = line.cmd.args} or nil
+            formatted_lines[last_formatted_line].bytes = line.cmd and line.cmd.bytes or nil
+        end
+        ::continue::
+    end
+
+    context.setupxtable({"booktabs"}, {
+        bodyfont = "10pt",
+    })
+    context.startxtable({"booktabs"})
+
+    context.startxtablehead()
+
+    context.startxrow({align = "center, lohi"})
+        context.startxcell({"booktabs:toprule"}, {nx="5"})
+        context.stopxcell()
+    context.stopxrow()
+
+    context.startxrow({align = "center, lohi"})
+        context.startxcell({option = "fixed", width = "\\dimexpr\\widthofstring{Адрес}"})
+            context("Адрес")
+        context.stopxcell()
+
+        context.startxcell({option = "fixed"})
+            context("Метка")
+        context.stopxcell()
+
+        context.startxcell({option = "fixed"})
+            context("Машинный\\blank[none] код")
+        context.stopxcell()
+
+        context.startxcell({option = "stretch"})
+            context("Ассемблерный\\blank[none] код")
+        context.stopxcell()
+
+        context.startxcell({option = "stretch"})
+            context("Комментарии")
+        context.stopxcell()
+    context.stopxrow()
+
+    context.startxrow({align = "center, lohi"})
+        context.startxcell({"booktabs:midrule"}, {nx="5"})
+        context.stopxcell()
+    context.stopxrow()
+
+    context.stopxtablehead()
+
+    context.startxtablebody()
+    for line_no, line in ipairs(formatted_lines) do
+        context.startxrow()
+            context.startxcell({align = "center"})
+                local counter = line.location_counter
+                local result
+                for i, _ in ipairs(line.bytes) do
+                    if i == 1 then
+                        result = string.format([==[\tech{\unit{%.4X}H}]==], counter)
+                    else
+                        result = result .. string.format([==[\blank[none]\tech{\unit{%.4X}H}]==], counter)
+                    end
+                    counter = counter + 1
+                end
+                context(result)
+            context.stopxcell()
+
+            context.startxcell({align = "flushright"})
+                local result
+                for i, label in ipairs(line.label) do
+                    if i == 1 then
+                        result = string.format([==[\tech{%s:}]==], label)
+                    else
+                        result = result .. string.format([==[\blank[none]\tech{%s:}]==], label)
+                    end
+                end
+                context(result)
+            context.stopxcell()
+
+            context.startxcell({align = "center", width = "\\dimexpr\\widthofstring{Машинный} + 1em"})
+                local result
+                for i, byte in ipairs(line.bytes) do
+                    if i == 1 then
+                        result = string.format([==[\tech{%.2X}]==], byte)
+                    else
+                        result = result .. string.format([==[\blank[none]\tech{%.2X}]==], byte)
+                    end
+                    counter = counter + 1
+                end
+                context(result)
+            context.stopxcell()
+
+            context.startxcell({align = "flushleft", width = "\\dimexpr\\widthofstring{Ассемблерный код}"})
+                local args = ""
+                if line.asm.args then
+                    for i, arg in ipairs(line.asm.args) do
+                        local formatted
+                        if arg.register or arg.register_pair then
+                            formatted = arg.register or arg.register_pair
+                        elseif arg.byte or arg.word or arg.faux then
+                            formatted = Intel8080.formatting.format_expression(arg.byte or arg.word or arg.faux)
+                        end
+
+                        if i == 1 then
+                            args = formatted
+                        else
+                            args = args .. ", " .. formatted
+                        end
+                    end
+
+                    context([==[\tech{%s %s}]==], line.asm.cmd_name, args)
+                else
+                    context([==[\tech{%s}]==], line.asm.cmd_name)
+                end
+            context.stopxcell()
+
+            context.startxcell({align = "width, stretch, morehyphenated, fullhz, hanging"})
+                for i, comment in ipairs(line.comment) do
+                    if i == 1 then
+                        context([==[%s]==], comment)
+                    else
+                        context([==[ %s]==], comment)
+                    end
+                end
+            context.stopxcell()
+        context.stopxrow()
+
+        if line_no ~= #formatted_lines then
+            context.startxrow({align = "center, lohi"})
+                context.startxcell({"booktabs:addlinespace"}, {nx="5"})
+                context.stopxcell()
+            context.stopxrow()
+        end
+    end
+    context.stopxtablebody()
+
+    context.startxtablefoot()
+
+    context.startxrow({align = "center, lohi"})
+        context.startxcell({"booktabs:bottomrule"}, {nx="5"})
+        context.stopxcell()
+    context.stopxrow()
+
+    context.stopxtablefoot()
+
+    context.stopxtable()
+end
+
+
 return Intel8080
